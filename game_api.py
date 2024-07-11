@@ -4,32 +4,29 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 
-# Sacar la lista
 class DictWithIndex:
     def __init__(self):
         self.__dicc = {}
-        self.__keys = []
 
+    # Only sets the pair if the key isn't in the dict
     def set_item(self, key, value):
         if self.__dicc.get(key, 0) == 0:
             self.__dicc[key] = value
-            self.__keys.append(key)
 
     def get_item(self, key, default=0):
         return self.__dicc.get(key, default)
 
     def get_key_by_index(self, index):
-        if index < len(self.__keys):
-            return self.__keys[index]
+        if index < len(self.__dicc):
+            return list(self.__dicc.keys())[index]
         return 0
 
-    def remove_item(self, key):
-        if key in self.__keys:
-            del self.__dicc[key]
-            self.__keys.remove(key)
+    def pop_item(self, key):
+        if self.__dicc.get(key, 0) != 0:
+            self.__dicc.pop(key)
 
     def __len__(self):
-        return len(self.__keys)
+        return len(self.__dicc)
 
 
 def scraper(url: str, dict_with_index: DictWithIndex, searched_link: str):
@@ -38,33 +35,30 @@ def scraper(url: str, dict_with_index: DictWithIndex, searched_link: str):
     adapter = HTTPAdapter(max_retries=retry)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
-
-    # Send an HTTP request to the website and retrieve the HTML content
-
+    # Try to send an HTTP request
     try:
         response = session.get(url, timeout=10)
         response.raise_for_status()
-    # response = requests.get(url)
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
         print(f"URL {url}")
-        dict_with_index.remove_item(url)
+        # Is this necessary? to review...
+        dict_with_index.pop_item(url[24:])
         return False
     # Parse the HTML content using lxml
     tree = html.fromstring(response.content)
-
     div = tree.xpath("//div[@id='mw-content-text']")[0]
     excluded_links = ["#cite_note", "Ayuda:", "/w/index", "Archivo:"]
-    # Extract the links from the body
+    # Extract <p>
     ptags = div.xpath(".//p")
     for ptag in ptags:
+        # Extract links that aren't buttons
         links_ptag = ptag.xpath(".//a[not(@role='button')]/@href")
         for link in links_ptag:
             if not any(excluded in link for excluded in excluded_links):
                 dict_with_index.set_item(link, url[24:])
                 if link == searched_link:
                     return True
-
     return False
 
 
@@ -93,7 +87,7 @@ def reconstruct_path(searched_link: str, dict_with_index: DictWithIndex):
 
 
 def main():
-    end_link = "/wiki/Género_de_videojuegos"
+    end_link = "/wiki/Apple_IIGS"
     first_link = "/wiki/Pok%C3%A9mon"
     links_dict_with_index = start_searching(first_link, end_link)
     path = reconstruct_path(end_link, links_dict_with_index)

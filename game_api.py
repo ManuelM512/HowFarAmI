@@ -1,39 +1,16 @@
 from lxml import html
+import multiprocessing
+from multiprocessing import Manager
+import os
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 
-class DictWithIndex:
-    def __init__(self):
-        self.__dicc = {}
-
-    # Only sets the pair if the key isn't in the dict
-    def set_item(self, key, value):
-        if self.__dicc.get(key, 0) == 0:
-            self.__dicc[key] = value
-
-    def get_item(self, key, default=0):
-        return self.__dicc.get(key, default)
-
-    def get_key_by_index(self, index):
-        if index < len(self.__dicc):
-            return list(self.__dicc.keys())[index]
-        return 0
-
-    def pop_item(self, key):
-        if self.__dicc.get(key, 0) != 0:
-            self.__dicc.pop(key)
-
-    def __len__(self):
-        return len(self.__dicc)
-
-
-def scraper(url: str, dict_with_index: DictWithIndex, searched_link: str):
+def scraper(url: str, dict_with_index: dict, searched_link: str, result: multiprocessing.Queue):
     session = requests.Session()
     retry = Retry(total=5, backoff_factor=0.5, status_forcelist=[500, 502, 503, 504])
     adapter = HTTPAdapter(max_retries=retry)
-    session.mount("http://", adapter)
     session.mount("https://", adapter)
     # Try to send an HTTP request
     try:
@@ -43,7 +20,7 @@ def scraper(url: str, dict_with_index: DictWithIndex, searched_link: str):
         print(f"An error occurred: {e}")
         print(f"URL {url}")
         # Is this necessary? to review...
-        dict_with_index.pop_item(url[24:])
+        # dict_with_index.pop_item(url[24:])
         return False
     # Parse the HTML content using lxml
     tree = html.fromstring(response.content)
@@ -56,9 +33,11 @@ def scraper(url: str, dict_with_index: DictWithIndex, searched_link: str):
         links_ptag = ptag.xpath(".//a[not(@role='button')]/@href")
         for link in links_ptag:
             if not any(excluded in link for excluded in excluded_links):
-                dict_with_index.set_item(link, url[24:])
+                # dict_with_index.set_item(link, url[24:])
+                if dict_with_index.get(link, 0) == 0:
+                    dict_with_index[link] = url[24:]
                 if link == searched_link:
-                    return True
+                    result.put(searched_link)
     return False
 
 
@@ -67,21 +46,40 @@ def start_searching(actual_url: str, searched_link: str):
     # Define wikipedia as context
     context_part = "https://es.wikipedia.org"
     i = 0
-    bea_links = DictWithIndex()
-    bea_links.set_item(actual_url, "")
+    manager = Manager()
+    bea_links = manager.dict()
+    bea_links[actual_url] = ""
+    # Trying to multiprocess
+    num_processes = multiprocessing.cpu_count()
+    found = multiprocessing.Queue()
     while actual_url != searched_link:
-        actual_url = bea_links.get_key_by_index(i)
-        i += 1
-        if scraper(context_part + actual_url, bea_links, searched_link):
+        processes = []
+        for _ in range(num_processes):
+            keys_links = list(bea_links.keys())
+            if i < len(keys_links):
+                actual_url = keys_links[i]
+                i += 1
+                p = multiprocessing.Process(
+                    target=scraper, args=(context_part + actual_url, bea_links, searched_link, found)
+                )
+                processes.append(p)
+                p.start()
+
+        for p in processes:
+            p.join()
+        if not found.empty():
             break
+        # last_offset = offset
+        # if scraper(context_part + actual_url, bea_links, searched_link):
+        #    break
     return bea_links
 
 
-def reconstruct_path(searched_link: str, dict_with_index: DictWithIndex):
+def reconstruct_path(searched_link: str, dict_with_index: dict):
     previous_link = searched_link
     path = [previous_link]
     while previous_link != "":
-        previous_link = dict_with_index.get_item(previous_link)
+        previous_link = dict_with_index.get(previous_link, 0)
         path.insert(0, previous_link)
     return path
 
@@ -95,4 +93,5 @@ def main():
     print(f"Links encontrados: {len(links_dict_with_index)}")
 
 
-main()
+if __name__ == '__main__':
+    main()

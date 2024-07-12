@@ -1,27 +1,29 @@
 from lxml import html
 import multiprocessing
 from multiprocessing import Manager
-import os
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from datetime import datetime
 
 
-def scraper(url: str, dict_with_index: dict, searched_link: str, result: multiprocessing.Queue):
-    session = requests.Session()
-    retry = Retry(total=5, backoff_factor=0.5, status_forcelist=[500, 502, 503, 504])
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount("https://", adapter)
+def scraper(
+    url: str,
+    dict_with_index: dict,
+    searched_link: str,
+    result: multiprocessing.Queue,
+    session: requests.Session,
+    keys_links,
+):
+    # This could be a function
     # Try to send an HTTP request
     try:
-        response = session.get(url, timeout=10)
+        response = session.get(url)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
+        r8_now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         print(f"An error occurred: {e}")
-        print(f"URL {url}")
-        # Is this necessary? to review...
-        # dict_with_index.pop_item(url[24:])
+        print(f"{r8_now} - URL: {url}")
         return False
+    # Another function to parse HTML
     # Parse the HTML content using lxml
     tree = html.fromstring(response.content)
     div = tree.xpath("//div[@id='mw-content-text']")[0]
@@ -33,11 +35,12 @@ def scraper(url: str, dict_with_index: dict, searched_link: str, result: multipr
         links_ptag = ptag.xpath(".//a[not(@role='button')]/@href")
         for link in links_ptag:
             if not any(excluded in link for excluded in excluded_links):
-                # dict_with_index.set_item(link, url[24:])
                 if dict_with_index.get(link, 0) == 0:
                     dict_with_index[link] = url[24:]
+                    keys_links.append(link)
                 if link == searched_link:
                     result.put(searched_link)
+                    break
     return False
 
 
@@ -49,18 +52,29 @@ def start_searching(actual_url: str, searched_link: str):
     manager = Manager()
     bea_links = manager.dict()
     bea_links[actual_url] = ""
+    session = requests.Session()
     # Trying to multiprocess
     num_processes = multiprocessing.cpu_count()
     found = multiprocessing.Queue()
+    print(datetime.now().strftime("%H:%M:%S.%f")[:-3])
+    keys_links = manager.list()
+    keys_links.append(actual_url)
     while actual_url != searched_link:
         processes = []
         for _ in range(num_processes):
-            keys_links = list(bea_links.keys())
             if i < len(keys_links):
                 actual_url = keys_links[i]
                 i += 1
                 p = multiprocessing.Process(
-                    target=scraper, args=(context_part + actual_url, bea_links, searched_link, found)
+                    target=scraper,
+                    args=(
+                        context_part + actual_url,
+                        bea_links,
+                        searched_link,
+                        found,
+                        session,
+                        keys_links,
+                    ),
                 )
                 processes.append(p)
                 p.start()
@@ -69,9 +83,6 @@ def start_searching(actual_url: str, searched_link: str):
             p.join()
         if not found.empty():
             break
-        # last_offset = offset
-        # if scraper(context_part + actual_url, bea_links, searched_link):
-        #    break
     return bea_links
 
 
@@ -85,13 +96,14 @@ def reconstruct_path(searched_link: str, dict_with_index: dict):
 
 
 def main():
-    end_link = "/wiki/Apple_IIGS"
+    end_link = "/wiki/Aceite_de_ballena"
     first_link = "/wiki/Pok%C3%A9mon"
     links_dict_with_index = start_searching(first_link, end_link)
     path = reconstruct_path(end_link, links_dict_with_index)
     print(path)
     print(f"Links encontrados: {len(links_dict_with_index)}")
+    print(datetime.now().strftime("%H:%M:%S.%f")[:-3])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

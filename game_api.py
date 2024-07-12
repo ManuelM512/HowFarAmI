@@ -91,7 +91,7 @@ def main():
     # Get the current time
     current_time = datetime.now()
     print(f"Inicio: {current_time.strftime('%H:%M:%S.%f')[:-3]}")
-    end_link = "/wiki/Jugador_de_videojuegos"
+    end_link = "/wiki/Aceite_de_ballena"
     first_link = "/wiki/Pok%C3%A9mon"
     links_dict_with_index = start_searching(first_link, end_link)
     path = reconstruct_path(end_link, links_dict_with_index)

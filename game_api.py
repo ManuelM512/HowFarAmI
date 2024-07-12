@@ -2,6 +2,7 @@ from lxml import html
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from datetime import datetime
 
 
 class DictWithIndex:
@@ -87,12 +88,17 @@ def reconstruct_path(searched_link: str, dict_with_index: DictWithIndex):
 
 
 def main():
-    end_link = "/wiki/Apple_IIGS"
+    # Get the current time
+    current_time = datetime.now()
+    print(f"Inicio: {current_time.strftime('%H:%M:%S.%f')[:-3]}")
+    end_link = "/wiki/Jugador_de_videojuegos"
     first_link = "/wiki/Pok%C3%A9mon"
     links_dict_with_index = start_searching(first_link, end_link)
     path = reconstruct_path(end_link, links_dict_with_index)
     print(path)
     print(f"Links encontrados: {len(links_dict_with_index)}")
+    current_time = datetime.now()
+    print(f"Fin: {current_time.strftime('%H:%M:%S.%f')[:-3]}")
 
 
 main()

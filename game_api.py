@@ -7,7 +7,7 @@ from datetime import datetime
 
 def scraper(
     url: str,
-    dict_with_index: dict,
+    link_dict: dict,
     searched_link: str,
     result: multiprocessing.Queue,
     session: requests.Session,
@@ -27,7 +27,7 @@ def scraper(
     # Parse the HTML content using lxml
     tree = html.fromstring(response.content)
     div = tree.xpath("//div[@id='mw-content-text']")[0]
-    excluded_links = ["#cite_note", "Ayuda:", "/w/index", "Archivo:"]
+    excluded_links = ["#cite_note", "/wiki/Ayuda:", "/w/index", "/wiki/Archivo:"]
     # Extract <p>
     ptags = div.xpath(".//p")
     for ptag in ptags:
@@ -35,12 +35,12 @@ def scraper(
         links_ptag = ptag.xpath(".//a[not(@role='button')]/@href")
         for link in links_ptag:
             if not any(excluded in link for excluded in excluded_links):
-                if dict_with_index.get(link, 0) == 0:
-                    dict_with_index[link] = url[24:]
+                if link_dict.get(link, 0) == 0:
+                    link_dict[link] = url[24:]
                     keys_links.append(link)
                 if link == searched_link:
                     result.put(searched_link)
-                    break
+                    return True
     return False
 
 
@@ -86,11 +86,11 @@ def start_searching(actual_url: str, searched_link: str):
     return bea_links
 
 
-def reconstruct_path(searched_link: str, dict_with_index: dict):
+def reconstruct_path(searched_link: str, link_dict: dict):
     previous_link = searched_link
     path = [previous_link]
     while previous_link != "":
-        previous_link = dict_with_index.get(previous_link, 0)
+        previous_link = link_dict.get(previous_link, 0)
         path.insert(0, previous_link)
     return path
 
@@ -98,10 +98,10 @@ def reconstruct_path(searched_link: str, dict_with_index: dict):
 def main():
     end_link = "/wiki/Aceite_de_ballena"
     first_link = "/wiki/Pok%C3%A9mon"
-    links_dict_with_index = start_searching(first_link, end_link)
-    path = reconstruct_path(end_link, links_dict_with_index)
+    links_dict = start_searching(first_link, end_link)
+    path = reconstruct_path(end_link, links_dict)
     print(path)
-    print(f"Links encontrados: {len(links_dict_with_index)}")
+    print(f"Links encontrados: {len(links_dict)}")
     print(datetime.now().strftime("%H:%M:%S.%f")[:-3])
 
 

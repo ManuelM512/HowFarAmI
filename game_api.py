@@ -27,20 +27,21 @@ def scraper(
     # Parse the HTML content using lxml
     tree = html.fromstring(response.content)
     div = tree.xpath("//div[@id='mw-content-text']")[0]
-    excluded_links = ["#cite_note", "/wiki/Ayuda:", "/w/index", "/wiki/Archivo:"]
+    # excluded_links = ["#cite_note", "/wiki/Ayuda:", "/w/index", "/wiki/Archivo:"]
     # Extract <p>
-    ptags = div.xpath(".//p")
-    for ptag in ptags:
+    ptags = div.xpath(
+        ".//p//a[not(@role='button') and not(starts-with(@href, '/wiki/Ayuda:')) and not(starts-with(@href, '/w/index')) and not(starts-with(@href, '/wiki/Archivo:'))]/@href"
+    )
+    for link in ptags:
         # Extract links that aren't buttons
-        links_ptag = ptag.xpath(".//a[not(@role='button')]/@href")
-        for link in links_ptag:
-            if not any(excluded in link for excluded in excluded_links):
-                if link_dict.get(link, 0) == 0:
-                    link_dict[link] = url[24:]
-                    keys_links.append(link)
-                if link == searched_link:
-                    result.put(searched_link)
-                    return True
+        if "#cite_note" not in link:
+            # if not any(excluded in link for excluded in excluded_links):
+            if link_dict.get(link, 0) == 0:
+                link_dict[link] = url[24:]
+                keys_links.append(link)
+            if link == searched_link:
+                result.put(searched_link)
+                return True
     return False
 
 

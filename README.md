@@ -35,6 +35,5 @@ This project uses a breadth-first search algorithm without relying on graph stru
 
 ## Work to Do
 
-- Implement a search for the same link as the starting one.
 - Add a stop button. Title to the upper part, messages of disclaimer maybe?
 - Improve the README with lessons learned, next steps, and decisions made during the project.

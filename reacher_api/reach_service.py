@@ -50,7 +50,7 @@ def scraper(
                     link_dict[link] = url
                     keys_links.append(link)
                 if link == searched_link:
-                    result.put(searched_link)
+                    result.put(url[24:])
                     return True
     return False
 
@@ -71,7 +71,7 @@ def start_searching(
     num_processes = multiprocessing.cpu_count()
     found = multiprocessing.Queue()
     i = 0
-    while actual_url != searched_link:
+    while found.empty():
         processes = []
         for _ in range(num_processes):
             if i < len(keys_links):
@@ -93,14 +93,12 @@ def start_searching(
 
         for p in processes:
             p.join()
-        if not found.empty():
-            break
-    return bea_links
+    return bea_links, found.get()
 
 
-def reconstruct_path(searched_link: str, link_dict: dict):
-    previous_link = searched_link
-    path = [previous_link]
+def reconstruct_path(last_link: str, searched_link: str, link_dict: dict):
+    previous_link = last_link
+    path = [previous_link, searched_link]
     while previous_link != "":
         previous_link = link_dict.get(previous_link, 0)[24:]
         path.insert(0, previous_link)
@@ -121,8 +119,10 @@ def reach(first_link: str, end_link: str):
     check_invalid_second = get_url(session, page_context + end_link)
     if check_invalid_first and check_invalid_second:
         start_time = datetime.now()
-        links_dict = start_searching(session, page_context, first_link, end_link)
-        path = reconstruct_path(end_link, links_dict)
+        links_dict, last_link = start_searching(
+            session, page_context, first_link, end_link
+        )
+        path = reconstruct_path(last_link, end_link, links_dict)
         path_beautified = beautify_path(path)
         end_time = datetime.now()
         return {

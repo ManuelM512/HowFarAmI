@@ -57,17 +57,22 @@ def scraper(
     return False
 
 
+def get_structures(first_link: str):
+    manager = Manager()
+    man_dict = manager.dict()
+    man_dict[first_link] = ""
+    man_list = manager.list()
+    man_list.append(first_link)
+    return man_list, man_dict
+
+
 def start_searching(
     session: requests.Session, context: str, actual_url: str, searched_link: str
 ):
-    i = 0
-    manager = Manager()
-    bea_links = manager.dict()
-    bea_links[actual_url] = ""
+    keys_links, bea_links = get_structures(actual_url)
     num_processes = multiprocessing.cpu_count()
     found = multiprocessing.Queue()
-    keys_links = manager.list()
-    keys_links.append(actual_url)
+    i = 0
     while actual_url != searched_link:
         processes = []
         for _ in range(num_processes):
@@ -106,7 +111,7 @@ def reconstruct_path(searched_link: str, link_dict: dict):
 
 def main():
     page_context = "https://es.wikipedia.org"
-    end_link = "/wiki/Aceite_de_ballena"
+    end_link = "/wiki/Barril_(unidad)"
     first_link = "/wiki/Pok%C3%A9mon"
     session = requests.Session()
     check_invalid_first = get_url(session, page_context + first_link)

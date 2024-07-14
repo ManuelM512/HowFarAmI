@@ -1,104 +1,135 @@
 from lxml import html
+import multiprocessing
+from multiprocessing import Manager
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 from datetime import datetime
 
 
-class DictWithIndex:
-    def __init__(self):
-        self.__dicc = {}
-
-    # Only sets the pair if the key isn't in the dict
-    def set_item(self, key, value):
-        if self.__dicc.get(key, 0) == 0:
-            self.__dicc[key] = value
-
-    def get_item(self, key, default=0):
-        return self.__dicc.get(key, default)
-
-    def get_key_by_index(self, index):
-        if index < len(self.__dicc):
-            return list(self.__dicc.keys())[index]
-        return 0
-
-    def pop_item(self, key):
-        if self.__dicc.get(key, 0) != 0:
-            self.__dicc.pop(key)
-
-    def __len__(self):
-        return len(self.__dicc)
-
-
-def scraper(url: str, dict_with_index: DictWithIndex, searched_link: str):
-    session = requests.Session()
-    retry = Retry(total=5, backoff_factor=0.5, status_forcelist=[500, 502, 503, 504])
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
+def get_url(session: requests.Session, url: str):
     # Try to send an HTTP request
     try:
-        response = session.get(url, timeout=10)
+        response = session.get(url)
         response.raise_for_status()
+        return response
     except requests.exceptions.RequestException as e:
+        r8_now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         print(f"An error occurred: {e}")
-        print(f"URL {url}")
-        # Is this necessary? to review...
-        dict_with_index.pop_item(url[24:])
+        print(f"{r8_now} - URL: {url}")
         return False
+
+
+def get_links_in_page(response: requests.Response):
     # Parse the HTML content using lxml
     tree = html.fromstring(response.content)
     div = tree.xpath("//div[@id='mw-content-text']")[0]
-    excluded_links = ["#cite_note", "Ayuda:", "/w/index", "Archivo:"]
     # Extract <p>
-    ptags = div.xpath(".//p")
-    for ptag in ptags:
-        # Extract links that aren't buttons
-        links_ptag = ptag.xpath(".//a[not(@role='button')]/@href")
-        for link in links_ptag:
-            if not any(excluded in link for excluded in excluded_links):
-                dict_with_index.set_item(link, url[24:])
+    links_to_search = div.xpath(
+        ".//p//a[not(@role='button') and not(starts-with(@href, '/wiki/Ayuda:'))"
+        + "and not(starts-with(@href, '/w/index')) and not(starts-with(@href, '/wiki/Archivo:'))]/@href"
+    )
+    return links_to_search
+
+
+def scraper(
+    url: str,
+    link_dict: dict,
+    searched_link: str,
+    result: multiprocessing.Queue,
+    session: requests.Session,
+    keys_links,
+):
+    response = get_url(session, url)
+    if response:
+        p_tags = get_links_in_page(response)
+        for link in p_tags:
+            if "#cite_note" not in link:
+                if link_dict.get(link, 0) == 0:
+                    # We could discuss the use of slicing,
+                    # as the context will always be the same
+                    # It would be a win/lose between memory and time complexity
+                    # link_dict[link] = url[24:] # With slicing
+                    # For the time being, I want it to be faster
+                    link_dict[link] = url
+                    keys_links.append(link)
                 if link == searched_link:
+                    result.put(searched_link)
                     return True
     return False
 
 
-def start_searching(actual_url: str, searched_link: str):
-    # Define the URL of the website to scrape
-    # Define wikipedia as context
-    context_part = "https://es.wikipedia.org"
+def get_structures(first_link: str):
+    manager = Manager()
+    man_dict = manager.dict()
+    man_dict[first_link] = ""
+    man_list = manager.list()
+    man_list.append(first_link)
+    return man_list, man_dict
+
+
+def start_searching(
+    session: requests.Session, context: str, actual_url: str, searched_link: str
+):
+    keys_links, bea_links = get_structures(actual_url)
+    num_processes = multiprocessing.cpu_count()
+    found = multiprocessing.Queue()
     i = 0
-    bea_links = DictWithIndex()
-    bea_links.set_item(actual_url, "")
     while actual_url != searched_link:
-        actual_url = bea_links.get_key_by_index(i)
-        i += 1
-        if scraper(context_part + actual_url, bea_links, searched_link):
+        processes = []
+        for _ in range(num_processes):
+            if i < len(keys_links):
+                actual_url = keys_links[i]
+                i += 1
+                p = multiprocessing.Process(
+                    target=scraper,
+                    args=(
+                        context + actual_url,
+                        bea_links,
+                        searched_link,
+                        found,
+                        session,
+                        keys_links,
+                    ),
+                )
+                processes.append(p)
+                p.start()
+
+        for p in processes:
+            p.join()
+        if not found.empty():
             break
     return bea_links
 
 
-def reconstruct_path(searched_link: str, dict_with_index: DictWithIndex):
+def reconstruct_path(searched_link: str, link_dict: dict):
     previous_link = searched_link
     path = [previous_link]
     while previous_link != "":
-        previous_link = dict_with_index.get_item(previous_link)
+        previous_link = link_dict.get(previous_link, 0)[24:]
         path.insert(0, previous_link)
     return path
 
 
 def main():
-    # Get the current time
-    current_time = datetime.now()
-    print(f"Inicio: {current_time.strftime('%H:%M:%S.%f')[:-3]}")
-    end_link = "/wiki/Aceite_de_ballena"
+    page_context = "https://es.wikipedia.org"
+    end_link = "/wiki/Barril_(unidad)"
     first_link = "/wiki/Pok%C3%A9mon"
-    links_dict_with_index = start_searching(first_link, end_link)
-    path = reconstruct_path(end_link, links_dict_with_index)
-    print(path)
-    print(f"Links encontrados: {len(links_dict_with_index)}")
-    current_time = datetime.now()
-    print(f"Fin: {current_time.strftime('%H:%M:%S.%f')[:-3]}")
+    session = requests.Session()
+    check_invalid_first = get_url(session, page_context + first_link)
+    check_invalid_second = get_url(session, page_context + end_link)
+    if check_invalid_first and check_invalid_second:
+        print(datetime.now().strftime("%H:%M:%S.%f")[:-3])
+        links_dict = start_searching(session, page_context, first_link, end_link)
+        path = reconstruct_path(end_link, links_dict)
+        print(path)
+        print(f"Links found: {len(links_dict)}")
+        print(datetime.now().strftime("%H:%M:%S.%f")[:-3])
+    else:
+        if not check_invalid_first and not check_invalid_second:
+            not_valid_link = f"{first_link} and {end_link}"
+        else:
+            not_valid_link = first_link if not check_invalid_first else end_link
+        print(f"{not_valid_link} not valid!")
 
 
-main()
+if __name__ == "__main__":
+    main()

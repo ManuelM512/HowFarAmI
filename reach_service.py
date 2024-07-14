@@ -128,9 +128,9 @@ def reach(first_link: str, end_link: str):
         path_beautified = beautify_path(path)
         end_time = datetime.now()
         return (
-            f"Links encontrados: {len(links_dict)}"
-            + f"\nCon camino más corto: {path_beautified}"
-            + f"\nEn un tiempo de {end_time-start_time}"
+            f"<b>Links encontrados:</b> {len(links_dict)}"
+            + f"<br><b>Con camino más corto:</b> {path_beautified}"
+            + f"<br><b>En un tiempo de:</b> {str(end_time-start_time)[:-3]}"
         )
     if not check_invalid_first and not check_invalid_second:
         not_valid_link = f"{first_link} and {end_link}"

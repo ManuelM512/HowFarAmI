@@ -37,5 +37,4 @@ This project uses a breadth-first search algorithm without relying on graph stru
 
 - Implement a search for the same link as the starting one.
 - Add a stop button.
-- Improve the HTML/CSS styling.
-- Enhance the README with lessons learned, next steps, and decisions made during the project.
+- Improve the README with lessons learned, next steps, and decisions made during the project.

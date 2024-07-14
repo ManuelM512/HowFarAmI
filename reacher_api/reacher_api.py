@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 import reach_service
 
@@ -22,6 +21,6 @@ class Links(BaseModel):
 
 @app.post("/reach")
 def reacher(links: Links):
-    from_link = links.from_link
-    to_link = links.to_link
-    return PlainTextResponse(reach_service.reach(from_link, to_link))
+    from_link = links.from_link[24:]
+    to_link = links.to_link[24:]
+    return reach_service.reach(from_link, to_link)

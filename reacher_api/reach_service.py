@@ -125,14 +125,13 @@ def reach(first_link: str, end_link: str):
         path = reconstruct_path(end_link, links_dict)
         path_beautified = beautify_path(path)
         end_time = datetime.now()
-        return (
-            # It ended like this in order to get a quick front
-            f"<b>Links found:</b> {len(links_dict)}"
-            + f"<br><b>Shortest path:</b> {path_beautified}"
-            + f"<br><b>Time needed:</b> {str(end_time-start_time)[:-3]}"
-        )
+        return {
+            "links": len(links_dict),
+            "path": path_beautified,
+            "time": str(end_time - start_time)[:-3],
+        }
     if not check_invalid_first and not check_invalid_second:
         not_valid_link = f"{first_link} and {end_link}"
     else:
         not_valid_link = first_link if not check_invalid_first else end_link
-    return f"{not_valid_link} no es/son válido/s!"
+    return {"error": f"{not_valid_link} no es/son válido/s!"}

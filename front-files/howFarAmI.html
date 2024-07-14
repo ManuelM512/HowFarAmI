@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Far Am I</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>How Far Am I?</h1>
+        <input type="text" id="from_link" placeholder="https://es.wikipedia.org/wiki/example_page_from">
+        <input type="text" id="to_link" placeholder="https://es.wikipedia.org/wiki/example_page_to">
+        <button onclick="send_to_reach()">Start reaching!</button>
+    </div>
+    <div id="loading">Loading</div>
+    <div class="response-container" id="responseContainer">
+        <div id="response"></div>
+    </div>
+    <script src="reach_to_fastapi.js"></script>
+</body>
+
+</html>

@@ -1,8 +1,8 @@
+from datetime import datetime
 from lxml import html
 import multiprocessing
 from multiprocessing import Manager
 import requests
-from datetime import datetime
 
 
 def get_url(session: requests.Session, url: str):
@@ -109,27 +109,31 @@ def reconstruct_path(searched_link: str, link_dict: dict):
     return path
 
 
-def main():
+def beautify_path(path: list):
+    beautified = path[1]
+    for link in path[2:]:
+        beautified += f" -> {link}"
+    return beautified
+
+
+def reach(first_link: str, end_link: str):
     page_context = "https://es.wikipedia.org"
-    end_link = "/wiki/Barril_(unidad)"
-    first_link = "/wiki/Pok%C3%A9mon"
     session = requests.Session()
     check_invalid_first = get_url(session, page_context + first_link)
     check_invalid_second = get_url(session, page_context + end_link)
     if check_invalid_first and check_invalid_second:
-        print(datetime.now().strftime("%H:%M:%S.%f")[:-3])
+        start_time = datetime.now()
         links_dict = start_searching(session, page_context, first_link, end_link)
         path = reconstruct_path(end_link, links_dict)
-        print(path)
-        print(f"Links found: {len(links_dict)}")
-        print(datetime.now().strftime("%H:%M:%S.%f")[:-3])
+        path_beautified = beautify_path(path)
+        end_time = datetime.now()
+        return (
+            f"Links encontrados: {len(links_dict)}"
+            + f"\nCon camino más corto: {path_beautified}"
+            + f"\nEn un tiempo de {end_time-start_time}"
+        )
+    if not check_invalid_first and not check_invalid_second:
+        not_valid_link = f"{first_link} and {end_link}"
     else:
-        if not check_invalid_first and not check_invalid_second:
-            not_valid_link = f"{first_link} and {end_link}"
-        else:
-            not_valid_link = first_link if not check_invalid_first else end_link
-        print(f"{not_valid_link} not valid!")
-
-
-if __name__ == "__main__":
-    main()
+        not_valid_link = first_link if not check_invalid_first else end_link
+    return f"{not_valid_link} no es/son válido/s!"

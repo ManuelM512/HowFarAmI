@@ -127,9 +127,9 @@ def reach(first_link: str, end_link: str):
         end_time = datetime.now()
         return (
             # It ended like this in order to get a quick front
-            f"<b>Links encontrados:</b> {len(links_dict)}"
-            + f"<br><b>Con camino más corto:</b> {path_beautified}"
-            + f"<br><b>En un tiempo de:</b> {str(end_time-start_time)[:-3]}"
+            f"<b>Links found:</b> {len(links_dict)}"
+            + f"<br><b>Shortest path:</b> {path_beautified}"
+            + f"<br><b>Time needed:</b> {str(end_time-start_time)[:-3]}"
         )
     if not check_invalid_first and not check_invalid_second:
         not_valid_link = f"{first_link} and {end_link}"

@@ -1,6 +1,6 @@
 # How Far Am I?
 
-Have you ever played the game where you navigate from one Wikipedia page to another using the fewest links possible? This project implements exactly that.
+Have you ever played the game where you navigate from one Wikipedia page to another using the fewest links possible? This does exactly that.
 
 [Instagram video demonstrating the game](https://www.instagram.com/reel/C9OXJCCO8mh/?utm_source=ig_web_copy_link)
 
@@ -36,5 +36,5 @@ This project uses a breadth-first search algorithm without relying on graph stru
 ## Work to Do
 
 - Implement a search for the same link as the starting one.
-- Add a stop button.
+- Add a stop button. Title to the upper part, messages of disclaimer maybe?
 - Improve the README with lessons learned, next steps, and decisions made during the project.

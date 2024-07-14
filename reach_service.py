@@ -23,7 +23,7 @@ def get_links_in_page(response: requests.Response):
     # Extract links from <p> that aren't buttons and not an unwanted link
     links_to_search = div.xpath(
         ".//p//a[not(@role='button') and not(starts-with(@href, '/wiki/Ayuda:'))"
-        + "and not(starts-with(@href, '/w/index')) and not(starts-with(@href, '/wiki/Archivo:'))]/@href"
+        + " and not(starts-with(@href, '/w/index')) and not(starts-with(@href, '/wiki/Archivo:'))]/@href"
     )
     return links_to_search
 

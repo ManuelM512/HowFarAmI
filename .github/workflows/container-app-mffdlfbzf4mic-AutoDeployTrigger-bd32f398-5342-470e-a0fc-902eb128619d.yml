@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-mffdlfbzf4mic
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ azure-deploy ]
+    paths:
+    - '/reacher_api/**'
+    - '.github/workflows/container-app-mffdlfbzf4mic-AutoDeployTrigger-bd32f398-5342-470e-a0fc-902eb128619d.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPMFFDLFBZF4MIC_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPMFFDLFBZF4MIC_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPMFFDLFBZF4MIC_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/reacher_api 
+          registryUrl: 
+          registryUsername: ${{ secrets.CONTAINERAPPMFFDLFBZF4MIC_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPMFFDLFBZF4MIC_REGISTRY_PASSWORD }}
+          containerAppName: container-app-mffdlfbzf4mic
+          resourceGroup: howfaramib6b8
+          imageToBuild: default/[parameters('containerAppName')]:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+

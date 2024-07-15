@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "howfarami"
+version = "0.1.0"
+description = "Using fastapi and requests to scrape the hell out of wikipedia in a BFS"
+authors = ["Manuel <manuel5mongelos@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.111.1"
+requests = "^2.32.3"
+lxml = "^5.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

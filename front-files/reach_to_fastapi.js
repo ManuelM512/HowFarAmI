@@ -7,7 +7,7 @@ async function send_to_reach() {
     responseContainer.style.display = 'none';
     startLoadingAnimation();
     try {
-        const response = await fetch('http://127.0.0.1:8000/reach', {
+        const response = await fetch('https://container-app-tr7y7ww47x7ha.lemondesert-8b27a259.westus2.azurecontainerapps.io/reach', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

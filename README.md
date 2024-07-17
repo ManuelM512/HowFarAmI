@@ -6,19 +6,14 @@ Have you ever played the game where you navigate from one Wikipedia page to anot
 
 ## How Does It Work?
 
-This project uses a breadth-first search algorithm without relying on graph structures. Instead, it employs a dictionary with lists as the primary data structures. This allows for efficient pathfinding between links with O(1) time complexity for checking if a link has been visited.
+This project uses a breadth-first search algorithm without relying on graph structures. Instead, it employs a dictionary and a list, as the primary data structures. This allows for efficient pathfinding between links with O(1) time complexity for checking if a link has been visited, while also being capable of reconstruct the path after reaching the target link.
 
 ### Steps:
 1. **Validation**: The algorithm first checks if both the starting and target Wikipedia links are valid.
-2. **Scraping**: If the links are valid, the algorithm scrapes the starting Wikipedia page, extracting all the links within `<p>` tags that aren't buttons or part of excluded categories (e.g., archives, help pages).
-3. **Building Paths**: The links are added to the dictionary and list, after proving they haven't been visited yet.
+2. **Scraping**: If the links are valid, the algorithm scrapes the starting Wikipedia page, extracting all the links, within `<p>` tags in the body, that aren't buttons or part of excluded categories (e.g., archives, help pages).
+3. **Building Paths**: The links are added to the dictionary (key: found link, value: the link of where it was scraped from) and list, after proving they haven't been visited yet.
 4. **Parallel Processing**: The process utilizes multiprocessing to improve speed through parallelization.
 5. **Path Reconstruction**: Once the target link is found, the loop ends, and the shortest path (in terms of the number of links) from the starting link to the target one is reconstructed.
-
-## Requirements
-
-- `pip install lxml`
-- `pip install fastapi`
 
 ## How to Run
 
@@ -28,12 +23,33 @@ This project uses a breadth-first search algorithm without relying on graph stru
    ```
 2. Open the `howFarAmI.html` file in your browser and start playing.
 
+### OR
+
+You can test it [here](https://manuelm512.github.io/HowFarAmI/)
+
 ## Disclaimer
 
-1. The links must be from Wikipedia in spanish! WIP for a english version
+1. The links must be from Wikipedia in spanish! WIP for an english version.
+   Be careful with the accents! If your pasted link has accents, it won't work. Sorry! 
+   You need to copy it without accents, probably the best way is to do right-click over the link you want and then the option that says something along the lines of "copy the link...". 
 2. This process can take some time depending on the number of pages between the starting and target links.
+   To make not-so-long tests, it's advised to choice a target link that you had got surfing between links from the starting one. Two or three pages between one and the other sounds like a nice try!
+
+## Decisions made
+
+Q. Why a dictionary?
+A. It provided me with the capability of asking if the link was already visited in O(1), while also being a not-so-traditinal way of implementing a kind of BFS, so it seemed fun. 
+I thought of it as a challenge, and in a way, like the implementation of heap-sort in a list, instead of a tree.
+
+Q. Is it really necessary a list?
+A. I really tried not to use it, however, it was a must in the end. Even if the dictionary already has a list of its keys, when I tried to retrieve them and get one by index, I couldn't find a way of doing so without the use of a cast of dict.keys() to list, which has a time complexity of O(n) (being n the amount of links), resulting in an even more slow algorithm. 
+
+Q. Trade off between memory and time complexity?
+A. Yes, it was something to take into account. Slicing of strings, or trying to only save the non-repeated parts of them, was used in the beginning, however, as I was trying to improve the time needed to run, it was discarded, as the use of slicing had a O(k), being k the amount of characters sliced, and this being done for each link, wasn't really what I was looking for.
+
 
 ## Work to Do
 
-- Add a stop button. Title to the upper part, messages of disclaimer maybe?
+- Add a stop button.
+- Improve style / front-end
 - Improve the README with lessons learned, next steps, and decisions made during the project.

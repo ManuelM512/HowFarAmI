@@ -37,15 +37,15 @@ You can test it [here](https://manuelm512.github.io/HowFarAmI/)
 
 ## Decisions made
 
-Q. Why a dictionary?
-A. It provided me with the capability of asking if the link was already visited in O(1), while also being a not-so-traditinal way of implementing a kind of BFS, so it seemed fun. 
+**Q.** Why a dictionary?<br>
+**A.** It provided me with the capability of asking if the link was already visited in O(1), while also being a not-so-traditinal way of implementing a kind of BFS, so it seemed fun. 
 I thought of it as a challenge, and in a way, like the implementation of heap-sort in a list, instead of a tree.
 
-Q. Is it really necessary a list?
-A. I really tried not to use it, however, it was a must in the end. Even if the dictionary already has a list of its keys, when I tried to retrieve them and get one by index, I couldn't find a way of doing so without the use of a cast of dict.keys() to list, which has a time complexity of O(n) (being n the amount of links), resulting in an even more slow algorithm. 
+**Q.** Is it really necessary a list?<br>
+**A.** I really tried not to use it, however, it was a must in the end. Even if the dictionary already has a list of its keys, when I tried to retrieve them and get one by index, I couldn't find a way of doing so without the use of a cast of dict.keys() to list, which has a time complexity of O(n) (being n the amount of links), resulting in an even more slow algorithm. 
 
-Q. Trade off between memory and time complexity?
-A. Yes, it was something to take into account. Slicing of strings, or trying to only save the non-repeated parts of them, was used in the beginning, however, as I was trying to improve the time needed to run, it was discarded, as the use of slicing had a O(k), being k the amount of characters sliced, and this being done for each link, wasn't really what I was looking for.
+**Q.** Trade off between memory and time complexity? <br>
+**A.** Yes, it was something to take into account. Slicing of strings, or trying to only save the non-repeated parts of them, was used in the beginning, however, as I was trying to improve the time needed to run, it was discarded, as the use of slicing had a O(k), being k the amount of characters sliced, and this being done for each link, wasn't really what I was looking for.
 
 
 ## Work to Do

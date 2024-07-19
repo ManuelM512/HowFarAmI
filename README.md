@@ -68,7 +68,7 @@ I thought of it as a challenge, and in a way, like the implementation of heap-so
 
 Some ideas I had while in the making proccess of this project (that lasted more or less a week).
 
-- Every x amount of links requested, save them and theirs connections, in order to not have so much data in the active memory, and only get back to them when needed to reconstruct the path.
+- Every x amount of links requested, save them and theirs connections, in order not to have so much data in the active memory, and only get back to them when needed to reconstruct the path.
 - Caching the data, or storing it in a DB, to reduce the amount of requests, reusing the ones already done between different searchs. 
 - Some searchs can be very long, thinking of a way to stop and continue would be nice.
 - A toggle button for english to make searching in english wikipedia doesn't sound difficult.

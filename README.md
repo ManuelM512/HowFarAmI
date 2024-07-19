@@ -17,10 +17,7 @@ This project uses a breadth-first search algorithm without relying on graph stru
 
 ## How to Run
 
-1. Run the FastAPI application:
-   ```sh
-   fastapi run reacher_api.py
-   ```
+1. Run the FastAPI application with Poetry
 2. Open the `howFarAmI.html` file in your browser and start playing.
 
 ### OR
@@ -47,9 +44,36 @@ I thought of it as a challenge, and in a way, like the implementation of heap-so
 **Q.** Trade off between memory and time complexity? <br>
 **A.** Yes, it was something to take into account. Slicing of strings, or trying to only save the non-repeated parts of them, was used in the beginning, however, as I was trying to improve the time needed to run, it was discarded, as the use of slicing had a O(k), being k the amount of characters sliced, and this being done for each link, wasn't really what I was looking for.
 
+## What I learned
+
+1. **Breadth-First Search (BFS) Implementation**:
+   - Implemented BFS in a non-traditional way, always aiming for efficiency in terms of time complexity.
+
+2. **Web Scraping Techniques**:
+   - How to extract the needed part of the page, excluding the ruled out ones.
+
+3. **Parallel Processing**:
+   - Learnt to use multiprocessing, while also how to implement it for this specific case.
+
+4. **Dependency Management with Poetry**:
+   - Managed project dependencies using Poetry, simplifying the setup and deployment.
+
+5. **Now with more experience in Python**:
+   - Researched plenty of functions time complexities and the best ways to use them.
+
+6. **Deployment and UI Integration**:
+   - Deployed a FastAPI application (harder than what I thought it would be) and integrated it with a front-end interface.
+
+## Next steps
+
+Some ideas I had while in the making proccess of this project (that lasted more or less a week).
+
+- Every x amount of links requested, save them and theirs connections, in order to not have so much data in the active memory, and only get back to them when needed to reconstruct the path.
+- Caching the data, or storing it in a DB, to reduce the amount of requests, reusing the ones already done between different searchs. 
+- Some searchs can be very long, thinking of a way to stop and continue would be nice.
+- A toggle button for english to make searching in english wikipedia doesn't sound difficult.
 
 ## Work to Do
 
-- Add a stop button.
 - Improve style / front-end
-- Improve the README with lessons learned, next steps, and decisions made during the project.
+- Improve the input of links, not to have problems with accents

@@ -6,7 +6,7 @@ Have you ever played the game where you navigate from one Wikipedia page to anot
 
 ## How Does It Work?
 
-This project uses a breadth-first search algorithm without relying on graph structures. Instead, it employs a dictionary and a list, as the primary data structures. This allows for efficient pathfinding between links with O(1) time complexity for checking if a link has been visited, while also being capable of reconstruct the path after reaching the target link.
+This project uses a breadth-first search algorithm without relying on graph structures. Instead, it employs a dictionary and a list, as the primary data structures. This allows for efficient pathfinding between links with O(1) time complexity for checking if a link has been visited, while also being capable of reconstructing the path after reaching the target link.
 
 ### Steps:
 1. **Validation**: The algorithm first checks if both the starting and target Wikipedia links are valid.
@@ -30,12 +30,12 @@ You can test it [here](https://manuelm512.github.io/HowFarAmI/)
    Be careful with the accents! If your pasted link has accents, it won't work. Sorry! 
    You need to copy it without accents, probably the best way is to do right-click over the link you want and then the option that says something along the lines of "copy the link...". 
 2. This process can take some time depending on the number of pages between the starting and target links.
-   To make not-so-long tests, it's advised to choice a target link that you had got surfing between links from the starting one. Two or three pages between one and the other sounds like a nice try!
+   To make not-so-long tests, it's advised to choose a target link that you had got surfing between links from the starting one. Two or three pages between one and the other sounds like a nice try!
 
 ## Decisions made
 
 **Q.** Why a dictionary?<br>
-**A.** It provided me with the capability of asking if the link was already visited in O(1), while also being a not-so-traditinal way of implementing a kind of BFS, so it seemed fun. 
+**A.** It provided me with the capability of asking if the link was already visited in O(1), while also being a non-traditinal way of implementing a kind of BFS, so it seemed fun. 
 I thought of it as a challenge, and in a way, like the implementation of heap-sort in a list, instead of a tree.
 
 **Q.** Is it really necessary a list?<br>
@@ -66,11 +66,11 @@ I thought of it as a challenge, and in a way, like the implementation of heap-so
 
 ## Next steps
 
-Some ideas I had while in the making proccess of this project (that lasted more or less a week).
+Some ideas I had while in the making process of this project (that lasted more or less a week).
 
 - Every x amount of links requested, save them and theirs connections, in order not to have so much data in the active memory, and only get back to them when needed to reconstruct the path.
-- Caching the data, or storing it in a DB, to reduce the amount of requests, reusing the ones already done between different searchs. 
-- Some searchs can be very long, thinking of a way to stop and continue would be nice.
+- Caching the data, or storing it in a DB, to reduce the amount of requests, reusing the ones already done between different searches. 
+- Some searches can be very long, thinking of a way to stop and continue would be nice.
 - A toggle button for english to make searching in english wikipedia doesn't sound difficult.
 
 ## Work to Do

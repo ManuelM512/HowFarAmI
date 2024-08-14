@@ -16,8 +16,8 @@ app.add_middleware(
 
 @app.post("/reach")
 def reacher(links: Links):
-    from_link = links.from_link[24:]
-    to_link = links.to_link[24:]
+    from_link = links.from_link
+    to_link = links.to_link
     return reach_service.reach(from_link, to_link)
 
 
